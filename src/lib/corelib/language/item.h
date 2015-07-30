@@ -64,6 +64,8 @@ public:
             : item(0), isProduct(false), required(true)
         {}
 
+        bool isValid() const { return item; }
+
         QualifiedId name;
         Item *item;
         bool isProduct;
@@ -92,6 +94,7 @@ public:
     const PropertyDeclarationMap &propertyDeclarations() const { return m_propertyDeclarations; }
     PropertyDeclaration propertyDeclaration(const QString &name) const;
     const Modules &modules() const { return m_modules; }
+    Module moduleByName(const QualifiedId &id) const;
     void addModule(const Module &module);
     void removeModules() { m_modules.clear(); }
     void setModules(const Modules &modules) { m_modules = modules; }

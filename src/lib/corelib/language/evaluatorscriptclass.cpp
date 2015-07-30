@@ -52,6 +52,36 @@
 namespace qbs {
 namespace Internal {
 
+class DepsClass : public QScriptClass
+{
+    QScriptValue m_result;
+public:
+    DepsClass(QScriptEngine *e)
+        : QScriptClass(e)
+    {}
+
+    QueryFlags queryProperty(const QScriptValue &object, const QScriptString &name, QueryFlags flags, uint *id);
+    QScriptValue property(const QScriptValue &object, const QScriptString &name, uint id);
+};
+
+QScriptClass::QueryFlags DepsClass::queryProperty(const QScriptValue &object, const QScriptString &name, QScriptClass::QueryFlags flags, uint *id)
+{
+    EvaluationData *edata = attachedPointer<EvaluationData>(object);
+    const QString nameString = name.toString();
+    const QualifiedId nameId = QualifiedId::fromString(nameString);
+    Item::Module m = edata->item->moduleByName(nameId);
+    if (!m.isValid() || !m.item->prototype() || !m.item->prototype()->prototype())
+        return QueryFlags();
+    m_result = edata->evaluator->scriptValue(m.item->prototype()->prototype());
+    return HandlesReadAccess;
+}
+
+QScriptValue DepsClass::property(const QScriptValue &object, const QScriptString &name, uint id)
+{
+    return m_result;
+}
+
+
 class SVConverter : ValueHandler
 {
     EvaluatorScriptClass * const scriptClass;
@@ -258,7 +288,8 @@ bool debugProperties = false;
 enum QueryPropertyType
 {
     QPTDefault,
-    QPTParentProperty
+    QPTParentProperty,
+    QPTDependenciesProperty
 };
 
 EvaluatorScriptClass::EvaluatorScriptClass(ScriptEngine *scriptEngine, const Logger &logger)
@@ -266,12 +297,18 @@ EvaluatorScriptClass::EvaluatorScriptClass(ScriptEngine *scriptEngine, const Log
     , m_logger(logger)
     , m_valueCacheEnabled(false)
 {
+    m_depsClass = new DepsClass(scriptEngine);
     m_getNativeSettingBuiltin = scriptEngine->newFunction(js_getNativeSetting, 3);
     m_getEnvBuiltin = scriptEngine->newFunction(js_getEnv, 1);
     m_currentEnvBuiltin = scriptEngine->newFunction(js_currentEnv, 0);
     m_canonicalArchitectureBuiltin = scriptEngine->newFunction(js_canonicalArchitecture, 1);
     m_rfc1034identifierBuiltin = scriptEngine->newFunction(js_rfc1034identifier, 1);
     m_getHashBuiltin = scriptEngine->newFunction(js_getHash, 1);
+}
+
+EvaluatorScriptClass::~EvaluatorScriptClass()
+{
+    delete m_depsClass;
 }
 
 QScriptClass::QueryFlags EvaluatorScriptClass::queryProperty(const QScriptValue &object,
@@ -294,6 +331,12 @@ QScriptClass::QueryFlags EvaluatorScriptClass::queryProperty(const QScriptValue 
         *id = QPTParentProperty;
         m_queryResult.data = data;
         return QScriptClass::HandlesReadAccess;
+    }
+
+    if (data->item->isModuleInstance() && nameString == QLatin1String("dependencies")) {
+        m_queryResult.data = data;
+        *id = QPTDependenciesProperty;
+        return HandlesReadAccess;
     }
 
     *id = QPTDefault;
@@ -471,7 +514,6 @@ QScriptValue EvaluatorScriptClass::property(const QScriptValue &object, const QS
 
     ValuePtr value;
     m_queryResult.value.swap(value);
-    QBS_ASSERT(value, return QScriptValue());
     QBS_ASSERT(m_queryResult.isNull(), return QScriptValue());
 
     if (debugProperties)
@@ -487,6 +529,13 @@ QScriptValue EvaluatorScriptClass::property(const QScriptValue &object, const QS
         }
     }
 
+    if (qpt == QPTDependenciesProperty) {
+        QScriptValue deps = engine()->newObject(m_depsClass);
+        attachPointerTo(deps, data);
+        return deps;
+    }
+
+    QBS_ASSERT(value, return QScriptValue());
     if (value->next() && !m_currentNextChain.contains(value.data())) {
         collectValuesFromNextChain(data, &result, name.toString(), value);
     } else {

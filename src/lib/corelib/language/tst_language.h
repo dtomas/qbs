@@ -71,6 +71,8 @@ private slots:
     void builtinFunctionInSearchPathsProperty();
     void canonicalArchitecture();
     void conditionalDepends();
+    void defaultValue();
+    void defaultValue_data();
     void dependencyOnAllProfiles();
     void environmentVariable();
     void erroneousFiles_data();

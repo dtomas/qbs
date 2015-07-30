@@ -354,6 +354,49 @@ void qbs::Internal::TestLanguage::dependencyOnAllProfiles()
     QCOMPARE(exceptionCaught, false);
 }
 
+void TestLanguage::defaultValue()
+{
+    bool exceptionCaught = false;
+    try {
+        SetupProjectParameters params = defaultParameters;
+        params.setProjectFilePath(testProject("defaultvalue/egon.qbs"));
+        QFETCH(QString, prop1Value);
+        params.setOverriddenValues(QVariantMap({{"lower.prop1", prop1Value}}));
+        TopLevelProjectPtr project = loader->loadProject(params);
+        QVERIFY(project);
+        QHash<QString, ResolvedProductPtr> products = productsFromProject(project);
+        QCOMPARE(products.count(), 1);
+        const ResolvedProductPtr product = products.value("egon");
+        QVERIFY(product);
+        QStringList propertyName = QStringList() << "modules" << "lower" << "prop2";
+        QVariant propertyValue = getConfigProperty(product->moduleProperties->value(), propertyName);
+        QFETCH(QVariant, expectedProp2Value);
+        QCOMPARE(propertyValue, expectedProp2Value);
+        propertyName = QStringList() << "modules" << "lower" << "listProp";
+        propertyValue = getConfigProperty(product->moduleProperties->value(), propertyName);
+        QFETCH(QVariant, expectedListPropValue);
+        QCOMPARE(propertyValue, expectedListPropValue);
+    }
+    catch (const ErrorInfo &e) {
+        exceptionCaught = true;
+        qDebug() << e.toString();
+    }
+    QCOMPARE(exceptionCaught, false);
+}
+
+void TestLanguage::defaultValue_data()
+{
+    QTest::addColumn<QString>("prop1Value");
+    QTest::addColumn<QVariant>("expectedProp2Value");
+    QTest::addColumn<QVariant>("expectedListPropValue");
+    QTest::newRow("controlling property with random value") << "random" << QVariant("withoutBlubb")
+            << QVariant(QStringList({"other", "other"}));
+    QTest::newRow("controlling property with blubb value") << "blubb" << QVariant("withBlubb")
+            << QVariant(QStringList({"blubb", "other", "blubb", "other"}));
+    QTest::newRow("controlling property with egon value") << "egon" << QVariant("withEgon")
+            << QVariant(QStringList({"egon", "other"}));
+}
+
 void TestLanguage::environmentVariable()
 {
     bool exceptionCaught = false;

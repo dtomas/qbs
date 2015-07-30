@@ -52,6 +52,7 @@ class EvaluatorScriptClass : public QScriptClass
 {
 public:
     EvaluatorScriptClass(ScriptEngine *scriptEngine, const Logger &logger);
+    ~EvaluatorScriptClass();
 
     QueryFlags queryProperty(const QScriptValue &object,
                              const QScriptString &name,
@@ -103,6 +104,7 @@ private:
     QScriptValue m_getHashBuiltin;
     QStack<JSSourceValue *> m_sourceValueStack;
     QSet<Value *> m_currentNextChain;
+    QScriptClass *m_depsClass;
 };
 
 } // namespace Internal

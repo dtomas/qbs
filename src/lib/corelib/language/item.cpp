@@ -158,6 +158,14 @@ PropertyDeclaration Item::propertyDeclaration(const QString &name) const
     return (!decl.isValid() && m_prototype) ? m_prototype->propertyDeclaration(name) : decl;
 }
 
+Item::Module Item::moduleByName(const QualifiedId &id) const
+{
+    foreach (const Module &m, m_modules)
+        if (m.name == id)
+            return m;
+    return Module();
+}
+
 void Item::addModule(const Item::Module &module)
 {
     const auto it = std::lower_bound(m_modules.begin(), m_modules.end(), module);

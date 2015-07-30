@@ -144,6 +144,7 @@ Module {
         if (qbs.targetOS.contains('darwin') && qbs.toolchain.contains('clang')
                 && config.contains('c++11'))
             return "libc++";
+        return dependencies.cpp.cxxStandardLibrary;
     }
 
     additionalProductTypes: ["qm"]
