@@ -105,6 +105,7 @@ private:
         setupScriptEngineForFile(scriptEngine, transformer->rule->prepareScript->fileContext, scope);
         setupScriptEngineForProduct(scriptEngine, transformer->product(), transformer->rule->module, scope,
                                     &observer);
+        setupScriptEngineForRule(scriptEngine, transformer->rule, scope);
         transformer->setupInputs(scope);
         transformer->setupOutputs(scriptEngine, scope);
 

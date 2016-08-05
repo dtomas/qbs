@@ -728,6 +728,7 @@ void ProjectResolver::resolveRule(Item *item, ProjectContext *projectContext)
         m_logger.printWarning(error);
         return;
     }
+    rule->properties = evaluateProperties(item);
     if (m_productContext)
         m_productContext->product->rules += rule;
     else

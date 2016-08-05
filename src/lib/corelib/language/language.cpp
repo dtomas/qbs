@@ -402,6 +402,7 @@ void Rule::load(PersistentPool &pool)
     prepareScript = pool.idLoadS<ScriptFunction>();
     outputArtifactsScript = pool.idLoadS<ScriptFunction>();
     module = pool.idLoadS<ResolvedModule>();
+    properties = pool.loadVariantMap();
     pool.stream()
         >> inputs
         >> outputFileTags
@@ -421,6 +422,7 @@ void Rule::store(PersistentPool &pool) const
     pool.store(prepareScript);
     pool.store(outputArtifactsScript);
     pool.store(module);
+    pool.store(properties);
     pool.stream()
         << inputs
         << outputFileTags

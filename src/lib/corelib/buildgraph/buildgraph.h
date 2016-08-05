@@ -76,6 +76,8 @@ void setupScriptEngineForFile(ScriptEngine *engine, const ResolvedFileContextCon
 void setupScriptEngineForProduct(ScriptEngine *engine, const ResolvedProductConstPtr &product,
                                  const ResolvedModuleConstPtr &module, QScriptValue targetObject,
                                  PrepareScriptObserver *observer = 0);
+void setupScriptEngineForRule(ScriptEngine *engine, const RuleConstPtr &rule,
+                                 QScriptValue targetObject);
 QString relativeArtifactFileName(const Artifact *artifact); // Debugging helpers
 
 void doSanityChecks(const ResolvedProjectPtr &project, const Logger &logger);

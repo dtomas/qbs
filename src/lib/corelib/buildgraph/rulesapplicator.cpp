@@ -91,6 +91,7 @@ void RulesApplicator::applyRule(const RuleConstPtr &rule, const ArtifactSet &inp
     PrepareScriptObserver observer(engine());
     setupScriptEngineForFile(engine(), m_rule->prepareScript->fileContext, scope());
     setupScriptEngineForProduct(engine(), m_product, m_rule->module, prepareScriptContext, &observer);
+    setupScriptEngineForRule(engine(), m_rule, prepareScriptContext);
 
     if (m_rule->multiplex) { // apply the rule once for a set of inputs
         doApply(inputArtifacts, prepareScriptContext);
@@ -170,6 +171,7 @@ void RulesApplicator::doApply(const ArtifactSet &inputArtifacts, QScriptValue &p
     copyProperty(QLatin1String("input"), prepareScriptContext, scope());
     copyProperty(QLatin1String("product"), prepareScriptContext, scope());
     copyProperty(QLatin1String("project"), prepareScriptContext, scope());
+    copyProperty(QLatin1String("rule"), prepareScriptContext, scope());
     if (m_rule->isDynamic()) {
         outputArtifacts = runOutputArtifactsScript(inputArtifacts,
                     ScriptEngine::argumentList(m_rule->outputArtifactsScript->argumentNames,

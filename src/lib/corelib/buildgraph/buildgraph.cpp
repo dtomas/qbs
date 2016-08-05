@@ -188,6 +188,15 @@ void setupScriptEngineForFile(ScriptEngine *engine, const ResolvedFileContextCon
     JsExtensions::setupExtensions(fileContext->jsExtensions(), targetObject);
 }
 
+void setupScriptEngineForRule(ScriptEngine *engine, const RuleConstPtr &rule, QScriptValue targetObject) {
+    QScriptValue ruleScriptValue = engine->newObject();
+    const QVariantMap &propMap = rule->properties;
+    for (QVariantMap::ConstIterator it = propMap.constBegin(); it != propMap.constEnd(); ++it) {
+        ruleScriptValue.setProperty(it.key(), engine->toScriptValue(it.value()));
+    }
+    targetObject.setProperty(QLatin1String("rule"), ruleScriptValue);
+}
+
 void setupScriptEngineForProduct(ScriptEngine *engine, const ResolvedProductConstPtr &product,
                                  const ResolvedModuleConstPtr &module, QScriptValue targetObject,
                                  PrepareScriptObserver *observer)

@@ -314,6 +314,7 @@ public:
     bool multiplex;
     QList<RuleArtifactPtr> artifacts;           // unused, if outputFileTags/outputArtifactsScript is non-empty
     bool alwaysRun;
+    QVariantMap properties;
 
     // members that we don't need to save
     int ruleGraphId;
